@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Pakan Ikan Otomatis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .login-form {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.875rem;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .alert {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1.25rem;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fish-animation {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: swim 3s ease-in-out infinite;
+        }
+        
+        @keyframes swim {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(20px) rotate(10deg); }
+        }
+
+        @media (max-width: 640px) {
+            .login-form {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-400">
+    <div class="login-container">
+        <div class="text-center mb-8">
+            <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
+                <i class="fas fa-fish text-4xl text-blue-600"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">LOGIN</h1>
+            <p class="text-gray-600 text-sm">Silakan masuk menggunakan<br>Username dan Password</p>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+            <div id="alertContainer"></div>
+            
+            <div class="input-group">
+                <label for="username">USERNAME</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Username"
+                    required
+                >
+            </div>
+            
+            <div class="input-group">
+                <label for="password">PASSWORD</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••"
+                    required
+                >
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span id="loginText">LOGIN</span>
+                <div class="loading" id="loadingSpinner">
+                    <div class="spinner"></div>
+                </div>
+            </button>
+        </form>
+        
+        <div class="fish-animation" style="top: 10%; left: 5%;">🐟</div>
+        <div class="fish-animation" style="bottom: 10%; right: 5%; animation-delay: 1s;">🐠</div>
+        <div class="fish-animation" style="top: 30%; left: 10%; animation-delay: 2s;">🐡</div>
+    </div>
+
+    <script>
+        // Demo credentials
+        const DEMO_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
+
+        // DOM elements
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const alertContainer = document.getElementById('alertContainer');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        // Show alert function
+        function showAlert(message, type = 'error') {
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            alertContainer.firstElementChild.style.display = 'block';
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Show loading state
+        function showLoading(show) {
+            if (show) {
+                loginText.style.display = 'none';
+                loadingSpinner.style.display = 'block';
+                loginBtn.disabled = true;
+            } else {
+                loginText.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+                loginBtn.disabled = false;
+            }
+        }
+
+        // Handle form submission
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Basic validation
+            if (!username || !password) {
+                showAlert('Username dan password harus diisi!');
+                return;
+            }
+            
+            showLoading(true);
+            
+            // Simulate API call
+            setTimeout(() => {
+                if (username === DEMO_CREDENTIALS.username && password === DEMO_CREDENTIALS.password) {
+                    // Store login state
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('username', username);
+                    
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showAlert('Username atau password salah!');
+                    showLoading(false);
+                }
+            }, 1500);
+        });
+
+        // Add input animations
+        [usernameInput, passwordInput].forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.style.transform = 'scale(1)';
+            });
+        });
+
+        // Check if already logged in
+        if (sessionStorage.getItem('isLoggedIn') === 'true') {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Demo credentials hint
+        setTimeout(() => {
+            const hint = document.createElement('div');
+            hint.className = 'text-center mt-4 text-xs text-gray-500';
+            hint.innerHTML = `
+                <p><strong>Demo:</strong> admin / admin123</p>
+            `;
+            document.querySelector('.login-form').appendChild(hint);
+        }, 2000);
+    </script>
+</body>
+</html>
